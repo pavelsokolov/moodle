@@ -870,7 +870,18 @@ class blog_filter_context extends blog_filter {
                     $context = context_course::instance($this->id);
                     $this->tables['ba'] = 'blog_association';
                     $this->conditions[] = 'p.id = ba.blogid';
-                    $this->conditions[] = 'ba.contextid = '.$context->id;
+                    
+                    // Create a new array that will contain the context id for the course and all nested modules.
+                    $ids = array();
+                    $ids[] = $context->id;
+
+                    foreach ($context->get_child_contexts() as $childcontextid => $contextobject) {
+                        if (get_class($contextobject) == 'context_module') {
+                            $ids[] = $childcontextid;
+                        }
+                    }
+                    $ids_string = implode(',', $ids);
+                    $this->conditions[] = 'ba.contextid IN ('.$ids_string.')';
                     break;
                 } else {
                     // We are dealing with the site course, do not break from the current case
