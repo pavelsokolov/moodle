@@ -251,6 +251,7 @@ class blog_entry implements renderable {
         }
 
         tag_set('post', $this->id, $this->tags);
+        events_trigger('blog_entry_added', $this);
     }
 
     /**
@@ -289,6 +290,7 @@ class blog_entry implements renderable {
         tag_set('post', $entry->id, $entry->tags);
 
         add_to_log(SITEID, 'blog', 'update', 'index.php?userid='.$USER->id.'&entryid='.$entry->id, $entry->subject);
+        events_trigger('blog_entry_edited', $entry);
     }
 
     /**
@@ -306,6 +308,7 @@ class blog_entry implements renderable {
         tag_set('post', $this->id, array());
 
         add_to_log(SITEID, 'blog', 'delete', 'index.php?userid='. $this->userid, 'deleted blog entry with entry id# '. $this->id);
+        events_trigger('blog_entry_deleted', $this);
     }
 
     /**
