@@ -870,7 +870,7 @@ class blog_filter_context extends blog_filter {
                     $context = context_course::instance($this->id);
                     $this->tables['ba'] = 'blog_association';
                     $this->conditions[] = 'p.id = ba.blogid';
-                    
+ 
                     // Create a new array that will contain the context id for the course and all nested modules.
                     $ids = array();
                     $ids[] = $context->id;
