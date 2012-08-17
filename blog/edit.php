@@ -186,6 +186,16 @@ if ($blogeditform->is_cancelled()) {
     redirect($returnurl);
 
 } else if ($data = $blogeditform->get_data()){
+    // Since a user can change the associated context: Update the return url with the current association.
+    if (!empty($data->modassoc)) {
+        $modulecontext = context::instance_by_id($data->modassoc);
+        $returnurl->param('modid', $modulecontext->instanceid);
+        $returnurl->remove_params('courseid');
+    } else if (!empty($data->courseassoc)) {
+        $coursecontext = context::instance_by_id($data->courseassoc);
+        $returnurl->param('courseid', $coursecontext->instanceid);
+        $returnurl->remove_params('modid');
+    }
 
     switch ($action) {
         case 'add':

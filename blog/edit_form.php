@@ -71,47 +71,38 @@ class blog_edit_form extends moodleform {
         $allmodnames = array();
 
         if (!empty($CFG->useblogassociations)) {
-            if ((!empty($entry->courseassoc) || (!empty($courseid) && empty($modid)))) {
-                if (!empty($courseid)) {
-                    $course = $DB->get_record('course', array('id' => $courseid));
-                    $context = context_course::instance($courseid);
-                    $a = new stdClass();
-                    $a->coursename = format_string($course->fullname, true, array('context' => $context));
-                    $contextid = $context->id;
-                } else {
-                    $context = context::instance_by_id($entry->courseassoc);
-                    $sql = 'SELECT fullname FROM {course} cr LEFT JOIN {context} ct ON ct.instanceid = cr.id WHERE ct.id = ?';
-                    $a = new stdClass();
-                    $a->coursename = $DB->get_field_sql($sql, array($entry->courseassoc));
-                    $contextid = $entry->courseassoc;
-                }
+            // Create a new array for all context where that the user is allowed to associate entries.
+            $permittedcontexts = array('' => '');
 
-                if (has_capability('moodle/blog:associatecourse', $context)) {
-                    $mform->addElement('header', 'assochdr', get_string('associations', 'blog'));
-                    $mform->addElement('advcheckbox', 'courseassoc', get_string('associatewithcourse', 'blog', $a), null, null, array(0, $contextid));
-                    $mform->setDefault('courseassoc', $contextid);
+            foreach (get_courses() as $course) {
+                $coursecontext = context_course::instance($course->id);
+                if (has_capability('moodle/blog:associatecourse', $coursecontext) && is_enrolled($coursecontext)) {
+                    $permittedcontexts[$coursecontext->id] = $course->fullname;
+                    foreach ($coursecontext->get_child_contexts() as $childcontext) {
+                        if ($childcontext->contextlevel == CONTEXT_MODULE
+                                && has_capability('moodle/blog:associatemodule', $childcontext)) {
+                            $cm = get_coursemodule_from_id(null, $childcontext->instanceid);
+                            $permittedcontexts[$childcontext->id] = '- '.$cm->name;
+                        }
+                    }
                 }
+            }
 
-            } else if ((!empty($entry->modassoc) || !empty($modid))) {
-                if (!empty($modid)) {
-                    $mod = get_coursemodule_from_id(false, $modid);
-                    $a = new stdClass();
-                    $a->modtype = get_string('modulename', $mod->modname);
-                    $a->modname = $mod->name;
-                    $context = context_module::instance($modid);
-                } else {
-                    $context = context::instance_by_id($entry->modassoc);
-                    $cm = $DB->get_record('course_modules', array('id' => $context->instanceid));
-                    $a = new stdClass();
-                    $a->modtype = $DB->get_field('modules', 'name', array('id' => $cm->module));
-                    $a->modname = $DB->get_field($a->modtype, 'name', array('id' => $cm->instance));
-                    $modid = $context->instanceid;
-                }
+            // If there are any allowed contexts (more than the empty first option), show the select element and set the default option.
+            if (count($permittedcontexts) > 1) {
+                $mform->addElement('header', 'assochdr', get_string('associations', 'blog'));
+                $associationselect = $mform->addElement('select', 'assoc', get_string('association', 'blog'), $permittedcontexts);
 
-                if (has_capability('moodle/blog:associatemodule', $context)) {
-                    $mform->addElement('header', 'assochdr', get_string('associations', 'blog'));
-                    $mform->addElement('advcheckbox', 'modassoc', get_string('associatewithmodule', 'blog', $a), null, null, array(0, $context->id));
-                    $mform->setDefault('modassoc', $context->id);
+                if (!empty($entry->modassoc)) {
+                    $mform->setDefault('assoc', $entry->modassoc);
+                } else if (!empty($entry->courseassoc)) {
+                    $mform->setDefault('assoc', $entry->courseassoc);
+                } else if (!empty($modid)) {
+                    $modulecontext = context_module::instance($modid);
+                    $mform->setDefault('assoc', $modulecontext->id);
+                } else if (!empty($courseid)) {
+                    $coursecontext = context_course::instance($courseid);
+                    $mform->setDefault('assoc', $coursecontext->id);
                 }
             }
         }
@@ -136,6 +127,22 @@ class blog_edit_form extends moodleform {
 
     function validation($data, $files) {
         global $CFG, $DB, $USER;
+
+        // Before validation starts: Change the name of the association element to either modassoc or courseassoc, depending on 
+        // what kind of context is chosen.
+        // This is not strictly validation, but needs to be performed before validation therefore
+        // definition_before_data() can't be used.
+
+        $mform =& $this->_form;
+        $associationselect = $mform->getElement('assoc');
+        $selectedvalue = $associationselect->getValue();
+        $selectedcontext = context::instance_by_id($selectedvalue[0]);
+
+        if ($selectedcontext->contextlevel == CONTEXT_MODULE) {
+            $associationselect->setName('modassoc');
+        } else if ($selectedcontext->contextlevel == CONTEXT_COURSE) {
+            $associationselect->setName('courseassoc');
+        }
 
         $errors = array();
 
