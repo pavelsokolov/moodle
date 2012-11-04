@@ -136,12 +136,14 @@ class blog_edit_form extends moodleform {
         $mform =& $this->_form;
         $associationselect = $mform->getElement('assoc');
         $selectedvalue = $associationselect->getValue();
-        $selectedcontext = context::instance_by_id($selectedvalue[0]);
+        if ($selectedvalue[0] != '') {
+            $selectedcontext = context::instance_by_id($selectedvalue[0]);
 
-        if ($selectedcontext->contextlevel == CONTEXT_MODULE) {
-            $associationselect->setName('modassoc');
-        } else if ($selectedcontext->contextlevel == CONTEXT_COURSE) {
-            $associationselect->setName('courseassoc');
+            if ($selectedcontext->contextlevel == CONTEXT_MODULE) {
+                $associationselect->setName('modassoc');
+            } else if ($selectedcontext->contextlevel == CONTEXT_COURSE) {
+                $associationselect->setName('courseassoc');
+            }
         }
 
         $errors = array();
