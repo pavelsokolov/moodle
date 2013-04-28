@@ -179,7 +179,7 @@ function assign_grading_areas_list() {
  * @return void
  */
 function assign_extend_settings_navigation(settings_navigation $settings, navigation_node $navref) {
-    global $PAGE, $DB;
+    global $PAGE, $DB, $CFG;
 
     $cm = $PAGE->cm;
     if (!$cm) {
@@ -194,6 +194,38 @@ function assign_extend_settings_navigation(settings_navigation $settings, naviga
         return;
     }
 
+    // Give the assign feedback and submission plugins a chance to include some navigation into settings block if they want.
+    $plugins = get_plugin_list('assignsubmission');
+
+    foreach ($plugins as $name => $plugin) {
+        $disabled = get_config('assignsubmission_' . $name, 'disabled');
+        if (!$disabled) {
+            $function = 'assignsubmission_' . $name . '_extend_settings_navigation';
+            $file = $CFG->dirroot . '/mod/assign/submission/' . $name . '/lib.php';
+            if (file_exists($file)) {
+                require_once($file);
+            }
+            if (function_exists($function)) {
+                $function($settings, $navref);
+            }
+        }
+    }
+
+    $plugins = get_plugin_list('assignfeedback');
+
+    foreach ($plugins as $name => $plugin) {
+        $disabled = get_config('assignfeedback_' . $name, 'disabled');
+        if (!$disabled) {
+            $function = 'assignfeedback_' . $name . '_extend_settings_navigation';
+            $file = $CFG->dirroot . '/mod/assign/feedback/' . $name . '/lib.php';
+            if (file_exists($file)) {
+                require_once($file);
+            }
+            if (function_exists($function)) {
+                $function($settings, $navref);
+            }
+        }
+    }
 
    // Link to gradebook
    if (has_capability('gradereport/grader:view', $cm->context) && has_capability('moodle/grade:viewall', $cm->context)) {
