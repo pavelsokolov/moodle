@@ -661,6 +661,22 @@ class mod_assign_renderer extends plugin_renderer_base {
         $o .= html_writer::table($t);
         $o .= $this->output->box_end();
 
+
+        // Hack for Reflection submission plugin.
+        if ($status->submission) {
+            global $CFG, $DB;
+            require_once($CFG->dirroot.'/group/lib.php');
+            $waitingid = $DB->get_field('assign_plugin_config', 'value', array('assignment' => $status->submission->assignment,
+                'plugin' => 'reflection', 'name' => 'waitingid'));
+            if ($waitingid) {
+                if (groups_is_member($waitingid, $status->submission->userid)) {
+                    $status->cansubmit = false;
+                    $status->canedit = false;
+                }
+            }
+        }
+
+
         // Links.
         if ($status->view == assign_submission_status::STUDENT_VIEW) {
             if ($status->canedit) {
