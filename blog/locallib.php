@@ -278,6 +278,11 @@ class blog_entry implements renderable {
         $sitecontext = context_system::instance();
         $entry = $this;
 
+        // Unset the values for associations to avoid that an old association remains if the user changes the association from 
+        // module to course or vice versa.
+        unset($entry->modassoc);
+        unset($entry->courseassoc);
+
         $this->form = $form;
         foreach ($params as $var => $val) {
             $entry->$var = $val;
