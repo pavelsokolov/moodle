@@ -650,6 +650,10 @@ class blog_listing {
             $conditions[] = $permissionsql;  //add permission constraints
         }
 
+        if (!empty($this->filters['group']) && !empty($this->filters['module'])) {
+            $this->filters['group']->params[2] = $this->filters['module']->params[0];
+        }
+        
         foreach ($this->filters as $type => $blogfilter) {
             $conditions = array_merge($conditions, $blogfilter->conditions);
             $params = array_merge($params, $blogfilter->params);
@@ -973,10 +977,20 @@ class blog_filter_user extends blog_filter {
                 $coursecontext     = context_course::instance($DB->get_field('groups', 'courseid', array('id' => $this->id)));
                 $this->tables['ba'] = 'blog_association';
                 $this->conditions[] = 'gm.groupid = ?';
-                $this->conditions[] = 'ba.contextid = ?';
                 $this->conditions[] = 'ba.blogid = p.id';
                 $this->params[]     = $this->id;
-                $this->params[]     = $coursecontext->id;
+
+                // Create a new array that will contain the context id for the course and all nested modules.
+                $ids = array();
+                $ids[] = $coursecontext->id;
+
+                foreach ($coursecontext->get_child_contexts() as $childcontextid => $contextobject) {
+                    if (get_class($contextobject) == 'context_module') {
+                        $ids[] = $childcontextid;
+                    }
+                }
+                $ids_string = implode(',', $ids);
+                $this->conditions[] = 'ba.contextid IN ('.$ids_string.')';
             }
         }
 
