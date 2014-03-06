@@ -160,6 +160,27 @@ class assign_grading_table extends table_sql implements renderable {
                             g.attemptnumber = s.attemptnumber
                          LEFT JOIN {assign_user_flags} uf ON u.id = uf.userid AND uf.assignment = :assignmentid3';
 
+        if ($this->assignment->get_instance()->teamsubmission) {
+            $groupingid = $assignment->get_instance()->teamsubmissiongroupingid;
+            if ($groupingid) {
+                $query = 'SELECT g.id FROM {groups} g JOIN {groupings_groups} gg ON gg.groupid = g.id WHERE gg.groupingid = '.$groupingid;
+                $teamsubmissiongroupinggroups = $DB->get_fieldset_sql($query);
+                $teamsubmissiongroupinggroups = '(' . join(',', $teamsubmissiongroupinggroups) . ')';
+                $groupingmodifier = ' AND gr.id IN '.$teamsubmissiongroupinggroups;
+            } else {
+                $groupingmodifier = '';
+            }
+
+            $usergroups = 'SELECT gms.userid, CASE WHEN COUNT(gr.id)=1 THEN gr.name ELSE "Default" END as team
+                            FROM {groups_members} gms 
+                            LEFT JOIN {groups} gr ON gms.groupid = gr.id 
+                            WHERE gr.courseid = '.$assignment->get_instance()->course.$groupingmodifier.' 
+                            GROUP BY gms.userid';
+
+            $fields .= ', CASE WHEN ugs.team is NULL THEN "Default" ELSE ugs.team END as team ';
+            $from .= ' LEFT JOIN ( ' . $usergroups . ' ) ugs ON u.id = ugs.userid';
+        }
+        
         $userparams = array();
         $userindex = 0;
 
@@ -398,7 +419,8 @@ class assign_grading_table extends table_sql implements renderable {
         $this->no_sorting('outcomes');
 
         if ($assignment->get_instance()->teamsubmission) {
-            $this->no_sorting('team');
+            $this->sortable('team');
+            $this->no_sorting('teamstatus');
         }
 
         $plugincolumnindex = 0;
