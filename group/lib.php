@@ -756,7 +756,7 @@ function groups_get_potential_members($courseid, $roleid = null, $cohortid = nul
  * @param int $groupnumber The number of the group to be used in the parsed format string
  * @return string the parsed format string
  */
-function groups_parse_name($format, $groupnumber) {
+function groups_parse_name($format, $groupnumber, $count = 0) {
     if (strstr($format, '@') !== false) { // Convert $groupnumber to a character series
         $letter = 'A';
         for($i=0; $i<$groupnumber; $i++) {
@@ -764,7 +764,12 @@ function groups_parse_name($format, $groupnumber) {
         }
         $str = str_replace('@', $letter, $format);
     } else {
-        $str = str_replace('#', $groupnumber+1, $format);
+        if ($count > 9) {
+            $num_length = strlen((string)$count);
+            $str = str_replace('#', str_pad($groupnumber+1, $num_length, '0', STR_PAD_LEFT), $format);
+        } else {
+            $str = str_replace('#', $groupnumber+1, $format);
+        }
     }
     return($str);
 }

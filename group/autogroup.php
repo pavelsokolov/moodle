@@ -118,7 +118,7 @@ if ($editform->is_cancelled()) {
     // allocate the users - all groups equal count first
     for ($i=0; $i<$numgrps; $i++) {
         $groups[$i] = array();
-        $groups[$i]['name']    = groups_parse_name(trim($data->namingscheme), $i);
+        $groups[$i]['name']    = groups_parse_name(trim($data->namingscheme), $i, $data->number);
         $groups[$i]['members'] = array();
         if ($data->allocateby == 'no') {
             continue; // do not allocate users

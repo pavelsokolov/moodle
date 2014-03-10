@@ -54,7 +54,7 @@ class autogroup_form extends moodleform {
         $mform->setType('namingscheme', PARAM_TEXT);
         // There must not be duplicate group names in course.
         $template = get_string('grouptemplate', 'group');
-        $gname = groups_parse_name($template, 0);
+        $gname = groups_parse_name($template, 0, 0);
         if (!groups_get_group_by_name($COURSE->id, $gname)) {
             $mform->setDefault('namingscheme', $template);
         }
