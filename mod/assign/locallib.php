@@ -518,6 +518,8 @@ class assign {
             $o .= $this->view_grading_page();
         } else if ($action == 'downloadall') {
             $o .= $this->download_submissions();
+        } else if ($action == 'downloadselectedsubmissions') {
+            $o .= $this->download_selected_submissions($mform);
         } else if ($action == 'submit') {
             $o .= $this->check_submit_for_grading($mform);
         } else if ($action == 'grantextension') {
@@ -2412,9 +2414,10 @@ class assign {
     /**
      * Download a zip file of all assignment submissions.
      *
+     * @param array with $students objects
      * @return string - If an error occurs, this will contain the error page.
      */
-    protected function download_submissions() {
+    protected function download_submissions($students=null) {
         global $CFG, $DB;
 
         // More efficient to load this here.
@@ -2422,9 +2425,11 @@ class assign {
 
         $this->require_view_grades();
 
-        // Load all users with submit.
-        $students = get_enrolled_users($this->context, "mod/assign:submit", null, 'u.*', null, null, null,
-                        $this->show_only_active_users());
+        if ($students == null) {
+            // Load all users with submit.
+            $students = get_enrolled_users($this->context, "mod/assign:submit", null, 'u.*', null, null, null,
+                            $this->show_only_active_users());
+        }
 
         // Build a list of files to zip.
         $filesforzipping = array();
@@ -2513,6 +2518,28 @@ class assign {
             // We will not get here - send_temp_file calls exit.
         }
         return $result;
+    }
+
+    /**
+     * Extracts selected users from the $mform and sends the user objects
+     * to the download_submissions function, which it then returns the result of
+     *
+     * @param moodleform $mform - Used for getting the selected users
+     * @return string - See return value of download_submissions
+     */
+    protected function download_selected_submissions($mform) {
+        global $DB;
+
+        // Get the list of users.
+        $data = $mform->get_data();
+        $users = $data->selectedusers;
+        $userlist = explode(',', $users);
+
+        // Load selected users
+        $sql = 'SELECT * FROM {user} WHERE id IN (' . implode(',', $userlist) . ')';
+        $students = $DB->get_records_sql($sql);
+
+        return $this->download_submissions($students);
     }
 
     /**
@@ -3441,6 +3468,8 @@ class assign {
                 return 'viewbatchsetmarkingworkflowstate';
             } else if ($data->operation == 'setmarkingallocation') {
                 return 'viewbatchmarkingallocation';
+            } else if ($data->operation == 'download') {
+                return 'downloadselectedsubmissions';
             } else if (strpos($data->operation, $prefix) === 0) {
                 $tail = substr($data->operation, strlen($prefix));
                 list($plugintype, $action) = explode('_', $tail, 2);
