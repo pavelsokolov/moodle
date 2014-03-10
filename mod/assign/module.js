@@ -90,7 +90,7 @@ M.mod_assign.init_grading_table = function(Y) {
                         action = pluginaction.substr(plugin.length + 1);
                         confirmmessage = eval('M.str.assignfeedback_' + plugin + '.batchoperationconfirm' + action);
                     } else {
-                        confirmmessage = eval('M.str.assign.batchoperationconfirm' + operation.get('value'));
+                        confirmmessage = eval('M.str.assign.batchoperationconfirm' + action);
                     }
                     if (!confirm(confirmmessage)) {
                         e.preventDefault();
