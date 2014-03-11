@@ -1566,7 +1566,7 @@ class assign {
         global $DB;
 
         // Only ever send a max of one days worth of updates.
-        $yesterday = time() - (24 * 3600);
+        $yesterday = time() - (7 * 24 * 3600);
         $timenow   = time();
 
         // Collect all submissions from the past 24 hours that require mailing.
@@ -1619,6 +1619,23 @@ class assign {
         foreach ($submissions as $submission) {
 
             mtrace("Processing assignment submission $submission->id ...");
+
+            // Insert a check for markingguide status for this submission
+            $workflowstate = $DB->get_field('assign_user_flags', 'workflowstate', array(
+                'userid' => $submission->userid,
+                'assignment' => $submission->assignment
+                ));
+            if (isset($workflowstate) && ($workflowstate !== '')) {
+                if ($workflowstate !== 'released') {
+                    mtrace('Workflowstate is not set to release grade state for submission '.$submission->id);
+                    continue;
+                }
+            } else {
+                // Simulate the original 24h interval for sending out notifications if workflowstate is not used
+                if ($submission->lastmodified < (time()-24*3600)) {
+                    continue;
+                }
+            }
 
             // Do not cache user lookups - could be too many.
             if (!$user = $DB->get_record('user', array('id'=>$submission->userid))) {
