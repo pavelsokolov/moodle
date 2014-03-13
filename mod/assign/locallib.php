@@ -1750,9 +1750,9 @@ class assign {
         global $DB;
 
         $flags = $this->get_user_flags($grade->userid, true);
-        if ($flags->mailed != 1) {
+        //if ($flags->mailed != 1) {
             $flags->mailed = 0;
-        }
+        //}
 
         return $this->update_user_flags($flags);
     }
@@ -6211,6 +6211,11 @@ class assign {
         global $USER, $CFG, $DB;
 
         $grade = $this->get_user_grade($userid, true, $attemptnumber);
+        $existinggrade = clone $grade;
+        $existingfeedback = $DB->get_field('grade_grades', 'feedback', array(
+            'userid' => $grade->userid,
+            'itemid' => $this->get_grade_item()->id
+            ));
         $gradingdisabled = $this->grading_disabled($userid);
         $gradinginstance = $this->get_grading_instance($userid, $grade, $gradingdisabled);
         if (!$gradingdisabled) {
@@ -6250,7 +6255,10 @@ class assign {
             }
         }
         $this->update_grade($grade);
-        $this->notify_grade_modified($grade);
+        $upgradedgrade = $this->get_user_grade($userid, true, $attemptnumber);
+        if (((int)($existinggrade->grade) !== (int)($upgradedgrade->grade)) || ($existingfeedback !== $grade->feedbacktext)) {
+            $this->notify_grade_modified($grade);
+        }
 
         $addtolog = $this->add_to_log('grade submission', $this->format_grade_for_log($grade), '', true);
         $params = array(
