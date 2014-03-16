@@ -16,6 +16,35 @@ a.logo {
     float: right;
 }
 
+.userprofile dl.list {
+    margin: 0px 0px 0px 110px;
+    padding-bottom: 0px;
+}
+
+.userprofile dl.list dt {
+    text-align: left;
+    clear: none;
+    width: 130px;
+}
+
+.userprofile dl.list dd {
+    margin-left: 20px;
+}
+
+.userprofile .profilepicture {
+    float: left;
+    margin-right: 0px;
+}
+
+.path-user .description {
+    padding: 0 0 0 0; 
+    margin-bottom: 0px; 
+    border: 0px;
+    margin-left: 110px;
+  /*  border: 1px solid #ddd;*/
+    width: 80%;
+}
+
 /* Custom CSS Settings
 -------------------------*/
 [[setting:customcss]]
