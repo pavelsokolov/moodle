@@ -130,6 +130,14 @@ class mod_assign_mod_form extends moodleform_mod {
         $mform->addElement('selectyesno', 'teamsubmission', $name);
         $mform->addHelpButton('teamsubmission', 'teamsubmission', 'assign');
 
+        // Temporary hack for disabling switching mode if any submission is made @psokolov
+        if ($this->current && $this->current->coursemodule) {
+            $submissionsexist = $DB->record_exists('assign_submission', array('assignment' => $assignment->get_instance()->id));
+            if ($submissionsexist) {
+                $mform->freeze('teamsubmission');
+            }
+        }  
+
         $name = get_string('requireallteammemberssubmit', 'assign');
         $mform->addElement('selectyesno', 'requireallteammemberssubmit', $name);
         $mform->addHelpButton('requireallteammemberssubmit', 'requireallteammemberssubmit', 'assign');
