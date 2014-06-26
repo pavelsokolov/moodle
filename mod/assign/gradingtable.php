@@ -165,8 +165,12 @@ class assign_grading_table extends table_sql implements renderable {
             if ($groupingid) {
                 $query = 'SELECT g.id FROM {groups} g JOIN {groupings_groups} gg ON gg.groupid = g.id WHERE gg.groupingid = '.$groupingid;
                 $teamsubmissiongroupinggroups = $DB->get_fieldset_sql($query);
-                $teamsubmissiongroupinggroups = '(' . join(',', $teamsubmissiongroupinggroups) . ')';
-                $groupingmodifier = ' AND gr.id IN '.$teamsubmissiongroupinggroups;
+				if ($teamsubmissiongroupinggroups) {
+                   $teamsubmissiongroupinggroups = '(' . join(',', $teamsubmissiongroupinggroups) . ')';
+                   $groupingmodifier = ' AND gr.id IN '.$teamsubmissiongroupinggroups;
+				} else {
+				  $groupingmodifier = '';
+				}
             } else {
                 $groupingmodifier = '';
             }
