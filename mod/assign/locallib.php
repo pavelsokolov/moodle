@@ -2798,9 +2798,9 @@ class assign {
         if ($attemptnumber < 0) {
             // Make sure this grade matches the latest submission attempt.
             if ($this->get_instance()->teamsubmission) {
-                $submission = $this->get_group_submission($userid, 0, true);
+                $submission = $this->get_group_submission($userid, 0, $create);
             } else {
-                $submission = $this->get_user_submission($userid, true);
+                $submission = $this->get_user_submission($userid, $create);
             }
             if ($submission) {
                 $attemptnumber = $submission->attemptnumber;
