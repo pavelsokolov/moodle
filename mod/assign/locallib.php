@@ -288,7 +288,9 @@ class assign {
      */
     public function has_submissions_or_grades() {
         $allgrades = $this->count_grades();
-        $allsubmissions = $this->count_submissions();
+        $allsubmissions = $this->count_submissions_with_status('ASSIGN_SUBMISSION_STATUS_REOPENED') +
+            $this->count_submissions_with_status('ASSIGN_SUBMISSION_STATUS_DRAFT') +
+            $this->count_submissions_with_status('ASSIGN_SUBMISSION_STATUS_SUBMITTED');
         if (($allgrades == 0) && ($allsubmissions == 0)) {
             return false;
         }
