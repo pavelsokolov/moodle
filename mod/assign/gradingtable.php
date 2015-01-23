@@ -163,28 +163,29 @@ class assign_grading_table extends table_sql implements renderable {
         if ($this->assignment->get_instance()->teamsubmission) {
             $groupingid = $assignment->get_instance()->teamsubmissiongroupingid;
             if ($groupingid) {
-                $query = 'SELECT g.id FROM {groups} g JOIN {groupings_groups} gg ON gg.groupid = g.id WHERE gg.groupingid = '.$groupingid;
+                $query = 'SELECT g.id FROM {groups} g JOIN {groupings_groups} gg ON gg.groupid = g.id
+                    WHERE gg.groupingid = '.$groupingid;
                 $teamsubmissiongroupinggroups = $DB->get_fieldset_sql($query);
-				if ($teamsubmissiongroupinggroups) {
-                   $teamsubmissiongroupinggroups = '(' . join(',', $teamsubmissiongroupinggroups) . ')';
-                   $groupingmodifier = ' AND gr.id IN '.$teamsubmissiongroupinggroups;
-				} else {
-				  $groupingmodifier = '';
-				}
+                if ($teamsubmissiongroupinggroups) {
+                    $teamsubmissiongroupinggroups = '(' . join(',', $teamsubmissiongroupinggroups) . ')';
+                    $groupingmodifier = ' AND gr.id IN '.$teamsubmissiongroupinggroups;
+                } else {
+                    $groupingmodifier = '';
+                }
             } else {
                 $groupingmodifier = '';
             }
 
             $usergroups = 'SELECT gms.userid, CASE WHEN COUNT(gr.id)=1 THEN gr.name ELSE "Default" END as team
-                            FROM {groups_members} gms 
-                            LEFT JOIN {groups} gr ON gms.groupid = gr.id 
-                            WHERE gr.courseid = '.$assignment->get_instance()->course.$groupingmodifier.' 
+                            FROM {groups_members} gms
+                            LEFT JOIN {groups} gr ON gms.groupid = gr.id
+                            WHERE gr.courseid = '.$assignment->get_instance()->course.$groupingmodifier.'
                             GROUP BY gms.userid';
 
             $fields .= ', CASE WHEN ugs.team is NULL THEN "Default" ELSE ugs.team END as team ';
             $from .= ' LEFT JOIN ( ' . $usergroups . ' ) ugs ON u.id = ugs.userid';
         }
-        
+
         $userparams = array();
         $userindex = 0;
 
