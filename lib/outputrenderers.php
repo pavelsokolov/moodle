@@ -3963,8 +3963,14 @@ EOD;
             }
 
             $imagedata = $this->user_picture($user, array('size' => 100));
+            $userpreferences = get_user_preferences(null, null, $user->id);
+            $contact = $DB->get_record('message_contacts', array(
+                'userid' => $user->id,
+                'contactid' => $USER->id
+                ));
             // Check to see if we should be displaying a message button.
-            if ($USER->id != $user->id && has_capability('moodle/site:sendmessage', $context)) {
+            if ($USER->id != $user->id && has_capability('moodle/site:sendmessage', $context)
+                && ((empty($userpreferences['message_blocknoncontacts'])) || !empty($contact))) {
                 $userbuttons = array(
                     'messages' => array(
                         'buttontype' => 'message',
