@@ -38,6 +38,27 @@ class mod_label_mod_form extends moodleform_mod {
 
         $this->standard_coursemodule_elements();
 
+        // For collapsed view.
+        $mform->addElement('header', 'collapsiblesettings', get_string('collapsiblesettings', 'label'));
+        $mform->addElement('text', 'header', get_string('labelheader', 'label'), array('size' => LABEL_MAX_NAME_LENGTH));
+        $mform->addHelpButton('header', 'labelheader', 'label');
+
+        if (!empty($CFG->formatstringstriptags)) {
+            $mform->setType('header', PARAM_TEXT);
+        } else {
+            $mform->setType('header', PARAM_CLEANHTML);
+        }
+
+        $mform->addRule('header', get_string('maximumchars', '', LABEL_MAX_NAME_LENGTH),
+                        'maxlength', LABEL_MAX_NAME_LENGTH, 'client');
+        $mform->setDefault('header', (isset($this->current->name)) ? $this->current->name : '');
+        $mform->disabledIf('header', 'collapsible', 'eq', '0');
+
+        $choices = array(LABEL_COLLAPSIBLE_OFF => get_string('collapsibleoff', 'label'),
+                         LABEL_COLLAPSIBLE_EXPANDED => get_string('collapsibleexpanded', 'label'),
+                         LABEL_COLLAPSIBLE_COLLAPSED => get_string('collapsiblecollapsed', 'label'));
+        $mform->addElement('select', 'collapsiblemode', get_string('collapsiblemode', 'label'), $choices);
+
 //-------------------------------------------------------------------------------
 // buttons
         $this->add_action_buttons(true, false, null);

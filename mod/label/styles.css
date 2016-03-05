@@ -1,0 +1,36 @@
+.modtype_label .l_header {
+    cursor: pointer;
+    margin-top: 5px; 
+}
+
+.modtype_label .l_header ul {
+    background-image: url([[pix:t/expanded]]);
+    background-position: 2px 50%;
+    background-repeat: no-repeat;
+    margin: 0;    
+}
+
+.modtype_label .l_header li {
+    list-style-type: none;
+    list-style: none;
+    margin-left: 20px;
+}
+
+.modtype_label .l_content {
+    display: block;
+}
+
+body.jsenabled .modtype_label .l_header ul {
+    background-image: url([[pix:t/collapsed]]);
+}
+
+body.jsenabled .modtype_label.expanded .l_header ul {
+    background-image: url([[pix:t/expanded]]);
+} 
+
+body.jsenabled .modtype_label .l_content {
+    display: none;
+}
+body.jsenabled .modtype_label.expanded .l_content {
+    display: block;
+}

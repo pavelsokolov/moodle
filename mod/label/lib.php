@@ -28,24 +28,34 @@ defined('MOODLE_INTERNAL') || die;
 /** LABEL_MAX_NAME_LENGTH = 50 */
 define("LABEL_MAX_NAME_LENGTH", 50);
 
+/** LABEL COLLAPSIBILITY **/
+define("LABEL_COLLAPSIBLE_OFF", 0);
+define("LABEL_COLLAPSIBLE_EXPANDED", 1);
+define("LABEL_COLLAPSIBLE_COLLAPSED", 2);
+
 /**
  * @uses LABEL_MAX_NAME_LENGTH
  * @param object $label
  * @return string
  */
 function get_label_name($label) {
-    $name = strip_tags(format_string($label->intro,true));
-    if (core_text::strlen($name) > LABEL_MAX_NAME_LENGTH) {
-        $name = core_text::substr($name, 0, LABEL_MAX_NAME_LENGTH)."...";
-    }
-
-    if (empty($name)) {
-        // arbitrary name
-        $name = get_string('modulename','label');
+    $name = '';
+    if (isset($label->header) && !empty($label->header)) {
+        $name = $label->header;
+    } else {
+        $name = strip_tags(format_string($label->intro, true));
+        if (core_text::strlen($name) > LABEL_MAX_NAME_LENGTH) {
+            $name = core_text::substr($name, 0, LABEL_MAX_NAME_LENGTH)."...";
+        }
+        if (empty($name)) {
+            // Arbitrary name.
+            $name = get_string('modulename', 'label');
+        }
     }
 
     return $name;
 }
+
 /**
  * Given an object containing all the necessary data,
  * (defined by the form in mod_form.php) this function
@@ -323,4 +333,37 @@ function label_generate_resized_image(stored_file $file, $maxwidth, $maxheight) 
     } else {
         return $img;
     }
+}
+
+/**
+ * Set the label content to be displayed on the course page.
+ *
+ * @param cm_info $cm
+ */
+function label_cm_info_view(cm_info $cm) {
+    global $PAGE, $DB;
+
+    $label = $DB->get_record('label', array('id' => $cm->instance));
+
+    $collapsiblemode = $label->collapsiblemode;
+
+    if ($collapsiblemode == LABEL_COLLAPSIBLE_OFF) {
+        return true;
+    } else {
+        $initialstate = ($collapsiblemode == LABEL_COLLAPSIBLE_COLLAPSED) ? 'collapsed' : 'expanded';
+        $PAGE->requires->js_init_call('M.mod_label.init', array($cm->id, $initialstate));
+    }
+
+    $content = html_writer::start_tag('div', array('id' => 'lh'.$cm->instance, 'class' => 'l_header'));
+    $content .= html_writer::start_tag('ul');
+    $content .= html_writer::start_tag('li');
+    $content .= $cm->name;
+    $content .= html_writer::end_tag('li');
+    $content .= html_writer::end_tag('ul');
+    $content .= html_writer::end_tag('div');
+    $content .= html_writer::start_tag('div', array('id' => 'lc'.$cm->instance,  'class' => 'l_content'));
+    $content .= format_module_intro('label', $label, $cm->id);
+    $content .= html_writer::end_tag('div');
+
+    $cm->set_content($content);
 }

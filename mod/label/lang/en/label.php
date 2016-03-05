@@ -23,6 +23,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['collapsiblecollapsed'] = 'Collapsible, initially collapsed';
+$string['collapsibleexpanded'] = 'Collapsible, initially expanded';
+$string['collapsiblemode'] = 'Collapsible mode';
+$string['collapsibleoff'] = 'Standard (Non-Collapsible)';
+$string['collapsiblesettings'] = 'Collapsible settings';
 $string['configdndmedia'] = 'Offer to create a label when media files are dragged & dropped onto a course';
 $string['configdndresizeheight'] = 'When a label is created from a dragged & dropped image, resize it if it is higher than this many pixels (0 for no resize)';
 $string['configdndresizewidth'] = 'When a label is created from a dragged & dropped image, resize it if it is wider than this many pixels (0 for no resize)';
@@ -32,6 +37,8 @@ $string['dndresizewidth'] = 'Resize drag and drop width';
 $string['dnduploadlabel'] = 'Add image to course page';
 $string['dnduploadlabeltext'] = 'Add a label to the course page';
 $string['label:addinstance'] = 'Add a new label';
+$string['labelheader'] = 'Label header';
+$string['labelheader_help'] = 'The label header is only shown when collapsible mode is on';
 $string['labeltext'] = 'Label text';
 $string['modulename'] = 'Label';
 $string['modulename_help'] = 'The label module enables text and multimedia to be inserted into the course page in between links to other resources and activities. Labels are very versatile and can help to improve the appearance of a course if used thoughtfully.

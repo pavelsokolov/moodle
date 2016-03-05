@@ -56,5 +56,20 @@ function xmldb_label_upgrade($oldversion) {
     // Moodle v3.0.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2016030500) {
+        // Define field to be added to label.
+        $table = new xmldb_table('label');
+        $field = new xmldb_field('collapsiblemode', XMLDB_TYPE_INTEGER, '2', null,
+                null, null, '0');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Assign savepoint reached.
+        upgrade_mod_savepoint(true, 2016030500, 'label');
+    }
+
     return true;
 }
