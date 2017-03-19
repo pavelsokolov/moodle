@@ -6064,13 +6064,25 @@ function can_send_from_real_email_address($from, $user, $unused = null) {
         return false;
     }
     $alloweddomains = array_map('trim', explode("\n", $CFG->allowedemaildomains));
+
+    // Loop through all shared courses to check course:useremail and email in extra fields.
+    $sharedcourses = enrol_get_shared_courses($user, $from, true, false);
+    $canviewuseremail = false;
+    foreach ($sharedcourses as $course) {
+        if (has_capability('moodle/site:viewuseridentity', context_course::instance($course->id), $user)
+            && !empty($CFG->showuseridentity)) {
+                $canviewuseremail = in_array('email', explode(',', $CFG->showuseridentity));
+        }
+    }
+
     // Email is in the list of allowed domains for sending email,
     // and the senders email setting is either displayed to everyone, or display to only other users that are enrolled
     // in a course with the sender.
     if (\core\ip_utils::is_domain_in_allowed_list(substr($from->email, strpos($from->email, '@') + 1), $alloweddomains)
-                && ($from->maildisplay == core_user::MAILDISPLAY_EVERYONE
+                && ($canviewuseremail
+                || $from->maildisplay == core_user::MAILDISPLAY_EVERYONE
                 || ($from->maildisplay == core_user::MAILDISPLAY_COURSE_MEMBERS_ONLY
-                && enrol_get_shared_courses($user, $from, false, true)))) {
+                && !empty($sharedcourses)))) {
         return true;
     }
     return false;
